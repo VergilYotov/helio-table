@@ -19,12 +19,8 @@
         Papa.parse("Catalog.csv", {
             download: true,
             delimiter: ",",
-            // header: true,
             fastMode: true,
             complete: function (results) {
-
-                // console.log(results);
-                // const resss = results.data;
                 $('#myTable').DataTable({
                     dom: 'Qlfrtip',
                     columns: [
@@ -56,7 +52,7 @@
                             var minutes = originalDate.getMinutes().toString().padStart(2, "0");
                             return year + month + day + "_" + hours + minutes;
                         }
-
+                        // Pick offset hours
                         timestampTime = ''
                         if (data[5]) {
                             timestampTime = data[5]
@@ -67,12 +63,10 @@
                                 offsetHours = 2
                             }
                         }
-
+                        // Add links to time strings
                         if (timestampTime) {
                             // Original timestamp in the "yyyy/mm/dd hh:mm" format
                             var originalTimestamp = data[1] + " " + timestampTime;
-                            // console.log(originalTimestamp);
-
                             // Parse the original timestamp
                             var originalDate = new Date(originalTimestamp.replace(/(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/, "$3-$2-$1T$4:$5:00Z"));
                             // Apply offset hours around timestamp
@@ -80,9 +74,7 @@
                             var pastTimestamp = formatDate(originalDate);
                             originalDate.setHours(originalDate.getHours() + 2 * offsetHours);
                             var futureTimestamp = formatDate(originalDate);
-                            // console.log(originalDate);
-                            // console.log(pastTimestamp);
-                            // console.log(futureTimestamp);
+
                             hrefStr = "https://cdaw.gsfc.nasa.gov/movie/make_javamovie.php?stime=" + pastTimestamp + "&etime=" + futureTimestamp + "&img1=lasc2rdf"
 
                             if (data[5]) {
