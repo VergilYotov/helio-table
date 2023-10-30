@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Helio Events</title>
+    <link href="https://cdn.datatables.net/v/dt/dt-1.13.6/date-1.5.1/fh-3.4.0/sb-1.6.0/sp-2.2.0/datatables.min.css"
+        rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script
+        src="https://cdn.datatables.net/v/dt/dt-1.13.6/date-1.5.1/fh-3.4.0/sb-1.6.0/sp-2.2.0/datatables.min.js"></script>
+    <script src=" https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js "></script>
+</head>
+
+<body>
+    <table id="myTable" class="display" width="100%"></table>
+    <script class="init">
+        Papa.parse("Catalog.csv", {
+            download: true,
+            delimiter: ",",
+            // header: true,
+            fastMode: true,
+            complete: function (results) {
+
+                // console.log(results);
+                // const resss = results.data;
+                $('#myTable').DataTable({
+                    dom: 'Qlfrtip',
+                    columns: [
+                        { title: 'NOAA No.' },
+                        { title: 'Date', type: 'date' },
+                        { title: 'AR Lat' },
+                        { title: 'AR Long' },
+                        { title: 'AR Type' },
+                        { title: 'CME Onset' },
+                        { title: 'CME CPA' },
+                        { title: 'CME AW' },
+                        { title: 'CME V' },
+                        { title: 'Flare Start' },
+                        { title: 'Flare Peak' },
+                        { title: 'Flare End' },
+                        { title: 'Flare Class' }
+                    ],
+                    "createdRow": function (row, data, dataIndex) {
+                        dateStr = data[1].replace(/\//g, '')
+                        // add link to every date
+                        $(row.cells[1]).html("<a href='https://www.solarmonitor.org/index.php?date=" + dateStr + "'>" + data[1] + "</a>");
+
+                        // Function to format a Date as "yyyyMMdd_hhmm"
+                        function formatDate(originalDate) {
+                            var year = originalDate.getFullYear();
+                            var month = (originalDate.getMonth() + 1).toString().padStart(2, "0");
+                            var day = originalDate.getDate().toString().padStart(2, "0");
+                            var hours = originalDate.getHours().toString().padStart(2, "0");
+                            var minutes = originalDate.getMinutes().toString().padStart(2, "0");
+                            return year + month + day + "_" + hours + minutes;
+                        }
+
+                        timestampTime = ''
+                        if (data[5]) {
+                            timestampTime = data[5]
+                            offsetHours = 4
+                        } else {
+                            if (data[10]) {
+                                timestampTime = data[10]
+                                offsetHours = 2
+                            }
+                        }
+
+                        if (timestampTime) {
+                            // Original timestamp in the "yyyy/mm/dd hh:mm" format
+                            var originalTimestamp = data[1] + " " + timestampTime;
+                            // console.log(originalTimestamp);
+
+                            // Parse the original timestamp
+                            var originalDate = new Date(originalTimestamp.replace(/(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/, "$3-$2-$1T$4:$5:00Z"));
+                            // Apply offset hours around timestamp
+                            originalDate.setHours(originalDate.getHours() - offsetHours);
+                            var pastTimestamp = formatDate(originalDate);
+                            originalDate.setHours(originalDate.getHours() + 2 * offsetHours);
+                            var futureTimestamp = formatDate(originalDate);
+                            // console.log(originalDate);
+                            // console.log(pastTimestamp);
+                            // console.log(futureTimestamp);
+                            hrefStr = "https://cdaw.gsfc.nasa.gov/movie/make_javamovie.php?stime=" + pastTimestamp + "&etime=" + futureTimestamp + "&img1=lasc2rdf"
+
+                            if (data[5]) {
+                                $(row.cells[5]).html("<a href='" + hrefStr + "'>" + data[5] + "</a>");
+                            } else {
+                                $(row.cells[9]).html("<a href='" + hrefStr + "'>" + data[9] + "</a>");
+                                $(row.cells[10]).html("<a href='" + hrefStr + "'>" + data[10] + "</a>");
+                                $(row.cells[11]).html("<a href='" + hrefStr + "'>" + data[11] + "</a>");
+                            }
+
+                        }
+                    },
+                    data: results.data
+                });
+
+            }
+        });
+    </script>
+</body>
+
+</html>
